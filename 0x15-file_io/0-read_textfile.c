@@ -8,21 +8,35 @@
  * Return: w- actual number of bytes read and printed
  *        0 when function fails or filename is NULL.
  */
-ssize_t read_textfile(const char *filename, size_t letters)
-{
-	char *buf;
-	ssize_t fd;
-	ssize_t w;
-	ssize_t t;
 
-	fd = open(filename, O_RDONLY);
-	if (fd == -1)
-		return (0);
-	buf = malloc(sizeof(char) * letters);
-	t = read(fd, buf, letters);
-	w = write(STDOUT_FILENO, buf, t);
+ssize_t read_textfile(const char *filename, size_t letters) {
+    if (filename == NULL) {
+        return 0;
+    }
 
-	free(buf);
-	close(fd);
-	return (w);
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        return 0;
+    }
+
+    char *buffer = (char *) malloc(letters + 1);
+    if (buffer == NULL) {
+        fclose(file);
+        return 0;
+    }
+
+    ssize_t bytes_read = fread(buffer, sizeof(char), letters, file);
+    if (bytes_read == -1) {
+        fclose(file);
+        free(buffer);
+        return 0;
+    }
+
+    buffer[bytes_read] = '\0';
+    printf("%s", buffer);
+
+    free(buffer);
+    fclose(file);
+
+    return bytes_read;
 }
